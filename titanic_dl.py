@@ -6,15 +6,15 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
 # %%
-EPOCHS = 20
-TEST_SIZE = 0.4
-DROPOUT = 0.5
+EPOCHS = 50
+TEST_SIZE = 0.01
+DROPOUT = 0.4
 
 # %%
 def main():
 
     #load data
-    train_f = "train.csv"
+    train_f = "data/train.csv"
     evidence, label = load_data(train_f)
     x_train, x_test, y_train, y_test =  train_test_split(evidence,label,test_size=TEST_SIZE)
 
@@ -27,13 +27,16 @@ def main():
     # Evaluate neural network performance
     model.evaluate(x_test,  y_test, verbose=2)
 
+    #save model
+    model.save("model.h5")
+
 # %%
 def load_data(filename):
 
     #load data
     data = pd.read_csv(filename)
 
-    #check for missing data
+    #Check for empty data
     data.isnull().sum()
 
     # Fill missing values in the "Age" column with the median
@@ -53,9 +56,7 @@ def load_data(filename):
 
     # Select features and target
     features = ["Pclass", "Age", "SibSp", "Parch", "Fare", "Sex_female", "Sex_male", "Embarked_C", "Embarked_Q", "Embarked_S"]
-    target = "Survived"
-
-    data.to_csv(filename.split(".")[0]+"panda.csv", index=True)
+    target = ["Survived"]
 
     x = data[features]
     y = data[target]
@@ -69,8 +70,8 @@ def get_model():
 
         #hidden layer
         tf.keras.layers.Dense(256,input_shape=(10,), activation="relu"),
-        tf.keras.layers.Dense(128,input_shape=(10,), activation="relu"),
-        tf.keras.layers.Dense(64,input_shape=(10,), activation="relu"),
+        tf.keras.layers.Dense(128, activation="relu"),
+        tf.keras.layers.Dense(64,activation="relu"),
 
         #dropout layer
         tf.keras.layers.Dropout(DROPOUT),
@@ -83,7 +84,7 @@ def get_model():
     model.compile(
         optimizer="adam",
         loss = "binary_crossentropy",
-        metrics = [tf.keras.metrics.Precision(),"accuracy"],
+        metrics = ["accuracy"],
     )   
     return model
 
